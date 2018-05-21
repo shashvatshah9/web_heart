@@ -1,0 +1,31 @@
+.menu{
+	width: auto;
+	text-shadow: 2px;
+	margin-left: 10px;
+	background-color: transparent;
+	text-decoration: none;
+	border-radius: 3px;
+	border-color: grey;
+	border-width: 3.5px;
+}
+
+.menu, a{
+	text-decoration: none;
+}
+
+#menu{
+	background-color: #bae0d7;
+	padding: 10px;
+	border-radius: 3px;
+}
+
+#pro_name{
+	font-family: monospace;
+	margin-left: 10px;
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+p{
+	font-size: 90px;
+}

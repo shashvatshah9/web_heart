@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Cognitive Player</title>
+	<meta charset="utf-8">
+	<meta name="theme-color" content="#334455">
+	<link rel="stylesheet" type="text/css" href="css/video_style.css">
+	<link rel="stylesheet" type="text/css" href="css/menu.css">
+	<script type="text/javascript" src="js/videoLoad.js"></script>
+	<script type="text/javascript" src="js/viewLoad.js"></script>
+	
+</head>
+<body>
+	<header>
+		<div id="menu">
+			<span id="pro_name"> Cognitive Computing</span>
+			<button name="home" class="menu" style="margin-left: 60%;" onclick="openPage('project_home.html')">Home</button>
+			<button class="menu" onclick="openPage('research.html')">Research</button>
+			<button class="menu" onclick="openPage('video_player.html')">Player</button>
+
+		</div>
+	</header>
+	<div id="player">
+			
+		<div id="playlist" class="open">
+			<h4 style="font-family: monospace; text-align: center; font-size: 20px; color: white;">Playlist</h4>
+			</div>
+
+		<video id="media" controls>
+			<script type="text/javascript">
+				changeSource('Classification.mp4')
+			</script>
+		</video>
+
+		<video style="width: 0px;
+			height: 0px;" id="videoDisplay" autoplay="true">
+			No video support in your browser
+		</video>
+		
+		<!--
+		<script type="text/javascript">
+			navigator.getUserMedia = navigator.getUserMedia ||navigator.webkitGetUserMedia||navigator.mozGetUserMedia;
+			
+			if(navigator.getUserMedia){
+				navigator.getUserMedia({video:true}, handleVideo, videoError);
+			}
+
+			function handleVideo(stream){
+				document.querySelector("#videoDisplay").src = window.URL.createObjectURL(stream);
+				console.log("Recording");
+			}
+
+			function videoError(e){
+				alert("Errorrr");
+			}
+
+		</script>
+		-->
+		
+	</div>
+
+</body>
+</html>
+
+<script type="text/javascript">
+	var prompt_show = true
+	var flag_attention_low = false
+	var attn, eye, heart
+	var url1 = 'http://localhost:3000/Eeg'
+	var url2 = 'http://localhost:3000/eye'
+	var url3 = 'http://localhost:3000/heart'
+	var video_player = document.getElementById("media");
+	video_player.playbackRate = 1;
+	
+	function playVid(){
+		video_player.play();
+	}
+
+	function pauseVid(){
+		video_player.pause();
+	}
+
+
+	function renewPrompt(){
+		if(!prompt_show) prompt_show=true
+	}
+
+	function checkStatus() {
+		if(!prompt_show || video_player.paused){
+			return;
+		}
+		
+		var request1 = new XMLHttpRequest();
+		var request2 = new XMLHttpRequest();
+		var request3 = new XMLHttpRequest();
+
+		request1.open('GET', url1);
+		request1.onload = function () {
+			var recievedData = JSON.parse(request1.responseText);
+			//console.log("eeg", recievedData);
+			recievedData.forEach(function(data){
+				attn = data.Attention
+			})
+		}
+		request1.send()
+
+		request2.open('GET', url2);
+		request2.onload = function () {
+			var recievedData = JSON.parse(request2.responseText);
+			//console.log("eye" ,recievedData);
+			recievedData.forEach(function(data){
+				eye = data.position
+			})
+		}
+		request2.send()
+
+		request3.open('GET', url3);
+		request3.onload = function () {
+			var recievedData = JSON.parse(request3.responseText);
+			//console.log("heart",recievedData);
+			recievedData.forEach(function(data){
+				heart = data.BPM
+			})
+		}
+		request3.send()
+		
+
+
+		console.log("Attention ", attn )
+		console.log("Heart ", heart )
+		console.log("eye", eye)
+
+		var val = 1 + (attn+35)/(100)
+		if(val){
+			video_player.playbackRate = val.toFixed(2)
+		}
+		
+		if((heart>110 || heart<65) || eye!="center" || attn<65){
+			flag_attention_low = true
+			prompt_show=false
+		}
+
+		if(flag_attention_low){
+			pauseVid()
+			//window.alert("!!Focus!!")
+			playVid()
+			flag_attention_low = false
+			prompt_show = true
+			var renew_prompt = setInterval(renewPrompt, 10000)
+		}
+	}
+
+
+	var refreshId = setInterval(checkStatus, 1000);
+
+</script>
